@@ -56,6 +56,18 @@ client_vonage = nexmo.Client(
     key=KEY_VONAGE, secret=KEY_VONAGE_SECRET
 )
 
+import json
+from flask import Flask, request
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+app = Flask(__name__)
+
+# Initialiser les credentials pour Google Sheets
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("path/to/your/credentials.json", scope)
+client = gspread.authorize(creds)
+
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
     print('Arrived lead')
@@ -154,7 +166,6 @@ def webhook_leads_pv():
     else:
         print("Erreur de format de requête")
         return "Erreur de format de requête"
-
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
