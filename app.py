@@ -1,23 +1,11 @@
 import json
 import os
-from flask import Flask, flash, request, redirect, render_template, send_file, url_for, make_response, after_this_request, jsonify
-import pandas as pd
-import boto3
-import csv
-import io
+from flask import Flask, request
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from google.oauth2.credentials import Credentials
-import google.auth
-from gspread import Cell
 import nexmo
-from datetime import datetime
-import xml.etree.ElementTree as ET
-import hashlib
-import requests
-
-
 from dotenv import load_dotenv
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -25,6 +13,7 @@ app = Flask(__name__)
 scope = ['https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive"]
 
+# Charger les variables d'environnement
 TYPE = os.environ.get("TYPE")
 PROJECT_ID = os.environ.get("PROJECT_ID")
 PRIVATE_KEY_ID = os.environ.get("PRIVATE_KEY_ID")
@@ -38,6 +27,7 @@ CLIENT_X509_CERT_URL = os.environ.get("CLIENT_X509_CERT_URL")
 KEY_VONAGE = os.environ.get("KEY_VONAGE")
 KEY_VONAGE_SECRET = os.environ.get("KEY_VONAGE_SECRET")
 
+# Initialiser les credentials pour Google Sheets à partir des variables d'environnement
 creds = ServiceAccountCredentials.from_json_keyfile_dict({
     "type": TYPE,
     "project_id": PROJECT_ID,
@@ -51,14 +41,15 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict({
     "client_x509_cert_url": CLIENT_X509_CERT_URL
 }, scope)
 
+# Initialisation globale du client gspread
 client = gspread.authorize(creds)
 
-client_vonage = nexmo.Client(
-    key=KEY_VONAGE, secret=KEY_VONAGE_SECRET
-)
+# Initialisation globale du client Vonage
+client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
 
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
+    global client
     print('arrived lead')
 
     if request.headers['Content-Type'] == 'application/json':
@@ -78,7 +69,7 @@ def webhook_leads_pv():
         statut_habitation = form_list[1]['choice']['label']
         date_sliced = date[0:10]
         print("téléphone: ", phone , date_sliced)
-        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+
         # Extract department
         if zipcode:
             if len(zipcode) == 4:
@@ -86,7 +77,7 @@ def webhook_leads_pv():
             department = zipcode[:2]
         else:
             department = ''
-        
+
         # Define client interests
         clientInterests = {
             'André': [3, 63, 21, 58, 71, 89, 22, 35, 18, 28, 36, 37, 41, 45, 19, 23, 87, 25, 70, 90, 8, 10, 51, 52, 54, 57, 88, 14, 50, 61, 27, 76, 44, 49, 53, 72, 85, 2, 60, 80, 7, 26, 38, 16, 17, 79, 86, 84, 46, 12, 55, 91, 15, 43, 42, 82, 32, 65, 31, 9, 11, 66, 81],
@@ -108,7 +99,7 @@ def webhook_leads_pv():
             'Yoel AU': [44, 49, 79, 85],
             'Yoel BJ2': [19, 23, 31, 81, 82, 87]
         }
-        
+
         # Determine interested clients
         interested_clients = []
         if department:
@@ -116,24 +107,28 @@ def webhook_leads_pv():
                 if int(department) in departments:
                     interested_clients.append(client)
 
-        
-        
-        all_values = sheet.get_all_values()
-        existing_phones = [row[5] for row in all_values]
-            
-        if phone not in existing_phones:
-            # Find the next available row
-            next_row = len(all_values) + 1
-            # Update the sheet with new lead information
-            sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
-            print("Nouveau lead inscrit")
-        else:
-            print("Lead déjà existant avec ce numéro de téléphone")
-                
+        try:
+            sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+            all_values = sheet.get_all_values()
+            existing_phones = [row[5] for row in all_values]
+
+            if phone not in existing_phones:
+                # Find the next available row
+                next_row = len(all_values) + 1
+                # Update the sheet with new lead information
+                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
+                print("Nouveau lead inscrit")
+            else:
+                print("Lead déjà existant avec ce numéro de téléphone")
+
+        except Exception as e:
+            print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
+            return f"Erreur lors de l'interaction avec Google Sheets: {e}"
+
         try:
             response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
             print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
-            
+
             if response['messages'][0]['status'] != '0':
                 print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
             return "Enregistrement réussi!"
