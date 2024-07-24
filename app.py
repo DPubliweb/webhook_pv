@@ -56,12 +56,6 @@ client_vonage = nexmo.Client(
     key=KEY_VONAGE, secret=KEY_VONAGE_SECRET
 )
 
-import json
-from flask import Flask, request
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
-app = Flask(__name__)
 
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
@@ -82,15 +76,18 @@ def webhook_leads_pv():
             date = json_tree["form_response"]["submitted_at"]
             date_sliced = date[:10]
             form_list = json_tree['form_response']['answers']
-            type_habitation = form_list[0]['choice']['label']
-            statut_habitation = form_list[1]['choice']['label']
+            first_question = form_list[0]
+            type_habitation = first_question['choice']['label']
+            second_question = form_list[1]
+            statut_habitation = second_question['choice']['label']
+            #third_question = form_list[2]
+            #chauffage = third_question['choice']['label']
             date_sliced = date[0:10]
             print("Téléphone: ", phone , date_sliced)
         except KeyError as e:
             print(f"Erreur lors de l'extraction des données: {e}")
             return f"Erreur lors de l'extraction des données: {e}"
-        
-        # Extract department
+                # Extract department
         if zipcode:
             if len(zipcode) == 4:
                 zipcode = '0' + zipcode
@@ -126,17 +123,13 @@ def webhook_leads_pv():
             for client, departments in clientInterests.items():
                 if int(department) in departments:
                     interested_clients.append(client)
-        
         try:
             sheet = client.open("Panneaux Solaires - Publiweb").sheet1
             all_values = sheet.get_all_values()
             existing_phones = [row[5] for row in all_values]
             
             if phone not in existing_phones:
-                # Find the next available row
-                next_row = len(all_values) + 1
-                # Update the sheet with new lead information
-                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
+                sheet.append_row([type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)])
                 print("Nouveau lead inscrit")
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
@@ -161,6 +154,7 @@ def webhook_leads_pv():
     else:
         print("Erreur de format de requête")
         return "Erreur de format de requête"
+
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
