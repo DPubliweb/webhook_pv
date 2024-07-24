@@ -56,7 +56,6 @@ client_vonage = nexmo.Client(
     key=KEY_VONAGE, secret=KEY_VONAGE_SECRET
 )
 
-
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
     print('Arrived lead')
@@ -76,12 +75,9 @@ def webhook_leads_pv():
             date = json_tree["form_response"]["submitted_at"]
             date_sliced = date[:10]
             form_list = json_tree['form_response']['answers']
-            first_question = form_list[0]
-            type_habitation = first_question['choice']['label']
-            second_question = form_list[1]
-            statut_habitation = second_question['choice']['label']
-            #third_question = form_list[2]
-            #chauffage = third_question['choice']['label']
+            type_habitation = form_list[0]['choice']['label']
+            statut_habitation = form_list[1]['choice']['label']
+            #chauffage = form_list[2]['choice']['label']
             date_sliced = date[0:10]
             print("Téléphone: ", phone , date_sliced)
         except KeyError as e:
@@ -94,7 +90,9 @@ def webhook_leads_pv():
             existing_phones = [row[5] for row in all_values]
             
             if phone not in existing_phones:
-                sheet.append_row([type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date])
+                # Utilisez la méthode update pour éviter le décalage
+                next_row = len(all_values) + 1
+                sheet.update(f'A{next_row}:K{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date]])
                 print("Nouveau lead inscrit")
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
