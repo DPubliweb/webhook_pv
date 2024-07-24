@@ -141,7 +141,7 @@ def webhook_leads_pv():
                 # Find the next available row
                 next_row = len(all_values) + 1
                 # Update the sheet with new lead information
-                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
+                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
