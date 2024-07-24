@@ -116,24 +116,20 @@ def webhook_leads_pv():
                 if int(department) in departments:
                     interested_clients.append(client)
 
-        try:
-            sheet = client.open("Panneaux Solaires - Publiweb").sheet1
-            all_values = sheet.get_all_values()
-            existing_phones = [row[5] for row in all_values]
-            
-            if phone not in existing_phones:
-                # Find the next available row
-                next_row = len(all_values) + 1
-                # Update the sheet with new lead information
-                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
-                print("Nouveau lead inscrit")
-            else:
-                print("Lead déjà existant avec ce numéro de téléphone")
-                
-        except Exception as e:
-            print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
-            return f"Erreur lors de l'interaction avec Google Sheets: {e}"
         
+        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+        all_values = sheet.get_all_values()
+        existing_phones = [row[5] for row in all_values]
+            
+        if phone not in existing_phones:
+            # Find the next available row
+            next_row = len(all_values) + 1
+            # Update the sheet with new lead information
+            sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
+            print("Nouveau lead inscrit")
+        else:
+            print("Lead déjà existant avec ce numéro de téléphone")
+                
         try:
             response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
             print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
