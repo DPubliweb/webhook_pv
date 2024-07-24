@@ -59,49 +59,66 @@ client_vonage = nexmo.Client(
 
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
-    print('arrived lead')
+    print('Arrived lead')
 
     if request.headers['Content-Type'] == 'application/json':
         json_tree = json.loads(request.data)
-        phone = json_tree["form_response"]["hidden"]["telephone"]
-        nom = json_tree["form_response"]["hidden"]["nom"]
-        prenom = json_tree["form_response"]["hidden"]["prenom"]
-        email = json_tree["form_response"]["hidden"]["email"]
-        cohort = json_tree ["form_response"]["hidden"]["cohort"]
-        zipcode = json_tree["form_response"]["hidden"]["code_postal"]
-        utm_source = json_tree["form_response"]["hidden"]["utm_source"]
-        code = json_tree["form_response"]["hidden"]["code"]
-        date = json_tree["form_response"]["submitted_at"]
-        date_sliced = date[:10]
-        form_list = json_tree['form_response']['answers']
-        first_question = form_list[0]
-        type_habitation = first_question['choice']['label']
-        second_question = form_list[1]
-        statut_habitation = second_question['choice']['label']
-        #third_question = form_list[2]
-        #chauffage = third_question['choice']['label']
-        date_sliced = date[0:10]
-        print("téléphone: ", phone , date_sliced)
-
-        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
-        all_values = sheet.get_all_values()
-        existing_phones = [row[5] for row in all_values]
-        if phone not in existing_phones :
-            sheet.append_row([type_habitation, statut_habitation, nom, prenom, phone, email,zipcode,code, utm_source, cohort, date])
-            print("Nouveau lead inscrit")
+        
         try:
-            response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
+            phone = json_tree["form_response"]["hidden"]["telephone"]
+            nom = json_tree["form_response"]["hidden"]["nom"]
+            prenom = json_tree["form_response"]["hidden"]["prenom"]
+            email = json_tree["form_response"]["hidden"]["email"]
+            cohort = json_tree["form_response"]["hidden"]["cohort"]
+            zipcode = json_tree["form_response"]["hidden"]["code_postal"]
+            utm_source = json_tree["form_response"]["hidden"]["utm_source"]
+            code = json_tree["form_response"]["hidden"]["code"]
+            date = json_tree["form_response"]["submitted_at"]
+            date_sliced = date[:10]
+            form_list = json_tree['form_response']['answers']
+            first_question = form_list[0]
+            type_habitation = first_question['choice']['label']
+            second_question = form_list[1]
+            statut_habitation = second_question['choice']['label']
+            #third_question = form_list[2]
+            #chauffage = third_question['choice']['label']
+            date_sliced = date[0:10]
+            print("Téléphone: ", phone , date_sliced)
+        except KeyError as e:
+            print(f"Erreur lors de l'extraction des données: {e}")
+            return f"Erreur lors de l'extraction des données: {e}"
+        
+        try:
+            sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+            all_values = sheet.get_all_values()
+            existing_phones = [row[5] for row in all_values]
+            
+            if phone not in existing_phones:
+                sheet.append_row([type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date])
+                print("Nouveau lead inscrit")
+            else:
+                print("Lead déjà existant avec ce numéro de téléphone")
+                
+        except Exception as e:
+            print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
+            return f"Erreur lors de l'interaction avec Google Sheets: {e}"
+        
+        try:
+            response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code} Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
             print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
             
             if response['messages'][0]['status'] != '0':
                 print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
+                return f"Erreur lors de l'envoi du message: {response['messages'][0]['error-text']}"
+            
             return "Enregistrement réussi!"
+        
         except Exception as e:
             print("Erreur lors de l'envoi du message via Vonage:", e)
             return str(e)
     else:
+        print("Erreur de format de requête")
         return "Erreur de format de requête"
-    
 
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
