@@ -18,6 +18,7 @@ import requests
 
 
 from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -56,7 +57,6 @@ client_vonage = nexmo.Client(
     key=KEY_VONAGE, secret=KEY_VONAGE_SECRET
 )
 
-
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
     print('arrived lead')
@@ -67,23 +67,19 @@ def webhook_leads_pv():
         nom = json_tree["form_response"]["hidden"]["nom"]
         prenom = json_tree["form_response"]["hidden"]["prenom"]
         email = json_tree["form_response"]["hidden"]["email"]
-        cohort = json_tree ["form_response"]["hidden"]["cohort"]
+        cohort = json_tree["form_response"]["hidden"]["cohort"]
         zipcode = json_tree["form_response"]["hidden"]["code_postal"]
         utm_source = json_tree["form_response"]["hidden"]["utm_source"]
         code = json_tree["form_response"]["hidden"]["code"]
         date = json_tree["form_response"]["submitted_at"]
         date_sliced = date[:10]
         form_list = json_tree['form_response']['answers']
-        first_question = form_list[0]
-        type_habitation = first_question['choice']['label']
-        second_question = form_list[1]
-        statut_habitation = second_question['choice']['label']
-        #third_question = form_list[2]
-        #chauffage = third_question['choice']['label']
+        type_habitation = form_list[0]['choice']['label']
+        statut_habitation = form_list[1]['choice']['label']
         date_sliced = date[0:10]
         print("téléphone: ", phone , date_sliced)
 
-                # Extract department
+        # Extract department
         if zipcode:
             if len(zipcode) == 4:
                 zipcode = '0' + zipcode
@@ -119,7 +115,6 @@ def webhook_leads_pv():
             for client, departments in clientInterests.items():
                 if int(department) in departments:
                     interested_clients.append(client)
-
 
         try:
             sheet = client.open("Panneaux Solaires - Publiweb").sheet1
