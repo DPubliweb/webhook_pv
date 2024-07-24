@@ -78,7 +78,7 @@ def webhook_leads_pv():
         statut_habitation = form_list[1]['choice']['label']
         date_sliced = date[0:10]
         print("téléphone: ", phone , date_sliced)
-
+        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
         # Extract department
         if zipcode:
             if len(zipcode) == 4:
@@ -117,7 +117,7 @@ def webhook_leads_pv():
                     interested_clients.append(client)
 
         
-        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+        
         all_values = sheet.get_all_values()
         existing_phones = [row[5] for row in all_values]
             
