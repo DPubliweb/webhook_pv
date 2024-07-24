@@ -77,12 +77,48 @@ def webhook_leads_pv():
             form_list = json_tree['form_response']['answers']
             type_habitation = form_list[0]['choice']['label']
             statut_habitation = form_list[1]['choice']['label']
-            #chauffage = form_list[2]['choice']['label']
             date_sliced = date[0:10]
             print("Téléphone: ", phone , date_sliced)
         except KeyError as e:
             print(f"Erreur lors de l'extraction des données: {e}")
             return f"Erreur lors de l'extraction des données: {e}"
+        
+        # Extract department
+        if zipcode:
+            if len(zipcode) == 4:
+                zipcode = '0' + zipcode
+            department = zipcode[:2]
+        else:
+            department = ''
+        
+        # Define client interests
+        clientInterests = {
+            'André': [3, 63, 21, 58, 71, 89, 22, 35, 18, 28, 36, 37, 41, 45, 19, 23, 87, 25, 70, 90, 8, 10, 51, 52, 54, 57, 88, 14, 50, 61, 27, 76, 44, 49, 53, 72, 85, 2, 60, 80, 7, 26, 38, 16, 17, 79, 86, 84, 46, 12, 55, 91, 15, 43, 42, 82, 32, 65, 31, 9, 11, 66, 81],
+            'Benjamin Bohbot': [16, 17, 19, 21, 22, 23, 29, 35, 53, 56, 58, 71, 79, 86, 87],
+            'Samy Nackache CL': [54, 55, 57, 67, 88, 68],
+            'Samy Nackache SO': [59, 62, 80, 2, 60],
+            'Yoel A2': [31, 32, 81, 82],
+            'Yoel LB': [21, 58, 71, 89],
+            'Yoel N': [54, 57, 67, 68, 88],
+            'Yoel A': [31, 82],
+            'Yoel BL': [16, 17, 44, 85, 86],
+            'Yoel BJ': [54, 55, 57, 67],
+            'Dan Amsellem DAZ': [54, 57, 67, 55],
+            'Dan Amsellem DB': [28, 45, 89, 10, 41, 18],
+            'Laurent Berdugo': [60, 80, 2],
+            'Emmanuel Toubiana Z1': [37, 41, 89, 58, 21, 71, 85, 79, 86, 3, 63, 17, 16, 31, 81],
+            'Emmanuel Toubiana Z2': [24, 33, 40, 47],
+            'Laurent Berdugo2': [25, 39, 52, 54, 55, 57, 67, 68, 70, 88, 90],
+            'Yoel AU': [44, 49, 79, 85],
+            'Yoel BJ2': [19, 23, 31, 81, 82, 87]
+        }
+        
+        # Determine interested clients
+        interested_clients = []
+        if department:
+            for client, departments in clientInterests.items():
+                if int(department) in departments:
+                    interested_clients.append(client)
         
         try:
             sheet = client.open("Panneaux Solaires - Publiweb").sheet1
@@ -90,9 +126,10 @@ def webhook_leads_pv():
             existing_phones = [row[5] for row in all_values]
             
             if phone not in existing_phones:
-                # Utilisez la méthode update pour éviter le décalage
+                # Find the next available row
                 next_row = len(all_values) + 1
-                sheet.update(f'A{next_row}:K{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date]])
+                # Update the sheet with new lead information
+                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
