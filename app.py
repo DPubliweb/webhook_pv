@@ -83,11 +83,12 @@ def webhook_leads_pv():
         date_sliced = date[0:10]
         print("téléphone: ", phone , date_sliced)
 
-        sheet = client.open("Leads PV - Publiweb").sheet1
+        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
         all_values = sheet.get_all_values()
         existing_phones = [row[5] for row in all_values]
         if phone not in existing_phones :
             sheet.append_row([type_habitation, statut_habitation, nom, prenom, phone, email,zipcode,code, utm_source, cohort, date])
+            print("Nouveau lead inscrit")
         try:
             response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
             print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
@@ -116,7 +117,7 @@ def webhook_leads_desinscription_pv():
             phone_with_plus = form_list[0]['phone_number']
             phone_without_plus = phone_with_plus.lstrip('+')
 
-        sheet = client.open("Leads PV - Publiweb").sheet1
+        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
         all_values = sheet.get_all_values()
         row_number = None
         for index, row in enumerate(all_values):
@@ -128,7 +129,7 @@ def webhook_leads_desinscription_pv():
         if row_number:
             sheet.update_cell(row_number, 10, "DÉSINSCRIT")  # La colonne J est la 10ème colonneeets commence à 1, tandis que l'indexation des listes en Python commence à 0.
         else: 
-            print('didnt find the number')
+            print('Numéro à désinscrire non trouvé')
         return "Done"
     else:
         return 'Not there'
