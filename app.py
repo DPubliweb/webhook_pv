@@ -135,9 +135,19 @@ def webhook_leads_pv():
                     # Ajouter une nouvelle ligne si nécessaire
                     sheet.add_rows(1)
 
+                # Réinitialiser la couleur de fond à blanc
+                sheet.format(f'A{next_row}:O{next_row}', {
+                    "backgroundColor": {
+                        "red": 1.0,
+                        "green": 1.0,
+                        "blue": 1.0
+                    }
+                })
+
                 # Update the sheet with new lead information
                 sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
+
 
                 # Change the background color if conditions are met
                 if type_habitation == "Appartement ❌" or statut_habitation == "Locataire ❌":
