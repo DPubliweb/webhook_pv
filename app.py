@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -86,24 +86,30 @@ def webhook_leads_pv():
 
         # Define client interests
         clientInterests = {
-            'André': [3, 63, 21, 58, 71, 89, 22, 35, 18, 28, 36, 37, 41, 45, 19, 23, 87, 25, 70, 90, 8, 10, 51, 52, 54, 57, 88, 14, 50, 61, 27, 76, 44, 49, 53, 72, 85, 2, 60, 80, 7, 26, 38, 16, 17, 79, 86, 84, 46, 12, 55, 91, 15, 43, 42, 82, 32, 65, 31, 9, 11, 66, 81],
-            'Benjamin Bohbot': [16, 17, 19, 21, 22, 23, 29, 35, 53, 56, 58, 71, 79, 86, 87],
-            'Samy Nackache CL': [54, 55, 57, 67, 88, 68],
-            'Samy Nackache SO': [59, 62, 80, 2, 60],
-            'Yoel A2': [31, 32, 81, 82],
-            'Yoel LB': [21, 58, 71, 89],
-            'Yoel N': [54, 57, 67, 68, 88],
-            'Yoel A': [31, 82],
-            'Yoel BL': [16, 17, 44, 85, 86],
-            'Yoel BJ': [54, 55, 57, 67],
-            'Dan Amsellem DAZ': [54, 57, 67, 55],
-            'Dan Amsellem DB': [28, 45, 89, 10, 41, 18],
-            'Laurent Berdugo': [60, 80, 2],
-            'Emmanuel Toubiana Z1': [37, 41, 89, 58, 21, 71, 85, 79, 86, 3, 63, 17, 16, 31, 81],
-            'Emmanuel Toubiana Z2': [24, 33, 40, 47],
-            'Laurent Berdugo2': [25, 39, 52, 54, 55, 57, 67, 68, 70, 88, 90],
-            'Yoel AU': [44, 49, 79, 85],
-            'Yoel BJ2': [19, 23, 31, 81, 82, 87]
+            'André': [3,63,21,58,71,89,22,35,18,28,36,37,41,45,19,23,87,25,70,90,8,10,51,52,54,57,88,14,50,61,27,76,44,49,53,72,85,2,60,80,7,26,38,16,17,79,86,84,46,12,55,91,15,43,42,82,32,65,31,9,11,66,81]
+            #Benjamin Bohbot': [16, 17, 19, 21, 22, 23, 29, 35, 53, 56, 58, 71, 79, 86, 87],
+            #Samy Nackache CL': [54,55,57,55,88,67,68,25,70,90,31,32,09,08,01,82,30,34,79,86,85,63,33,20,77,78,92,91,93,94,95,08,10,51,52,62,59,61,03,15,19,46,12,37,41,36,18,21,28,45,65,11,66],
+            #'Samy Nackache SO': [59,62,80,02,60],
+            #'Yoel A2': [31,32,81,82],
+            #'Mickael Perez': [44,49,59,80,62,60,77,78,91,92,93,94,95],
+            #'Yoel LB': [21,58,71,89],
+            #'Yoel N': [54,57,67,68,88],
+            #'Yoel A': [31,82],
+            #'Yoel NG': [03,42,43,63],
+            #'Yoel JZ': [09,11,12,31,32,81],
+            #'Yoel BL': [16,17,44,85,86],
+            #'Yoel BJ': [54,55,57,67],
+            #'Samuel Labiod': [22, 29,35,78],
+            #'Dan Amsellem DAZ': [54,57,67,55],
+            #'Dan Amsellem DB': [28,45,89,10,41,18],
+            #'Laurent Berdugo': [60,80,02],
+            #'Emmanuel Toubiana Z1': [37,41,89,58,21,71,85,79,86,03,63,17,16,31,81],
+            #Emmanuel Toubiana Z2': [24,33,40,47],
+            #'Laurent Berdugo2': [25,39,52,54,55,57,67,68,70,88,90],
+            #'Laurent Berdugo3': [44,49,85,79],
+            #Yoel AU': [44,49,79,85],
+            #'Yoel BJ2': [19,23,31,81,82,87],
+            #'Zak Sebban': [28,46,76,27,10,51,59,62,80,14,50,61,51,10,89,28,46,76,27,02,45,60,77,78,91,92,93,94,95,66,11,41,37,18,36,24,33,47],
         }
 
         # Determine interested clients
@@ -133,18 +139,21 @@ def webhook_leads_pv():
 
                         if response['messages'][0]['status'] != '0':
                             print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
-                        return "Enregistrement réussi!"
+                            return jsonify({"status": "error", "message": response['messages'][0]['error-text']})
+                        return jsonify({"status": "success", "message": "Enregistrement réussi!"})
                     except Exception as e:
                         print("Erreur lors de l'envoi du message via Vonage:", e)
-                        return str(e)
+                        return jsonify({"status": "error", "message": str(e)})
+                else:
+                    return jsonify({"status": "success", "message": "Enregistrement réussi sans envoi de SMS."})
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
-                return "Lead déjà existant avec ce numéro de téléphone"
+                return jsonify({"status": "duplicate", "message": "Lead déjà existant avec ce numéro de téléphone"})
         except Exception as e:
             print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
-            return f"Erreur lors de l'interaction avec Google Sheets: {e}"
+            return jsonify({"status": "error", "message": f"Erreur lors de l'interaction avec Google Sheets: {e}"})
     else:
-        return "Erreur de format de requête"
+        return jsonify({"status": "error", "message": "Erreur de format de requête"})
 
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
