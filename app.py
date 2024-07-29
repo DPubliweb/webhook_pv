@@ -124,23 +124,25 @@ def webhook_leads_pv():
                 # Update the sheet with new lead information
                 sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
+
+                # Envoi de SMS si les conditions sont remplies
+                if "Appartement ❌" not in type_habitation and "Locataire ❌" not in statut_habitation:
+                    try:
+                        response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
+                        print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
+
+                        if response['messages'][0]['status'] != '0':
+                            print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
+                        return "Enregistrement réussi!"
+                    except Exception as e:
+                        print("Erreur lors de l'envoi du message via Vonage:", e)
+                        return str(e)
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
-
+                return "Lead déjà existant avec ce numéro de téléphone"
         except Exception as e:
             print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
             return f"Erreur lors de l'interaction avec Google Sheets: {e}"
-
-        try:
-            response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
-            print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
-
-            if response['messages'][0]['status'] != '0':
-                print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
-            return "Enregistrement réussi!"
-        except Exception as e:
-            print("Erreur lors de l'envoi du message via Vonage:", e)
-            return str(e)
     else:
         return "Erreur de format de requête"
 
