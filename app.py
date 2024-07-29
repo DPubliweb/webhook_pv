@@ -1,6 +1,7 @@
 import json
 import os
 from flask import Flask, request
+from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import nexmo
@@ -70,6 +71,11 @@ def webhook_leads_pv():
         statut_habitation = form_list[1]['choice']['label']
         date_sliced = date[0:10]
         print("téléphone: ", phone , date_sliced)
+
+        # Conversion et formatage de la date
+        date_obj = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+        date_sliced = date_obj.strftime("%d-%m-%Y %H:%M")
+
 
         # Extract department
         if zipcode:
