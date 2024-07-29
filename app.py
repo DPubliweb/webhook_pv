@@ -124,7 +124,6 @@ def webhook_leads_pv():
             all_values = sheet.get_all_values()
             existing_phones = [row[5] for row in all_values]
 
-            print("Numéros de téléphone existants :", existing_phones)
             print("Numéro de téléphone reçu :", phone)
 
             if phone not in existing_phones:
@@ -172,7 +171,6 @@ def webhook_leads_pv():
     else:
         return jsonify({"status": "error", "message": "Erreur de format de requête"})
 
-
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
     print('desinscription pv')
@@ -180,10 +178,16 @@ def webhook_leads_desinscription_pv():
     if request.headers['Content-Type'] == 'application/json':
         json_tree = json.loads(request.data)
         form_list = json_tree['form_response']['answers']
-        first_question = form_list[0]
-        if form_list and form_list[0]['type'] == 'phone_number':
-            phone_with_plus = form_list[0]['phone_number']
-            phone_without_plus = phone_with_plus.lstrip('+')
+        
+        phone_without_plus = None
+        for answer in form_list:
+            if answer['type'] == 'phone_number':
+                phone_with_plus = answer['phone_number']
+                phone_without_plus = phone_with_plus.lstrip('+')
+                break
+
+        if phone_without_plus is None:
+            return "Phone number not found in the form responses", 400
 
         sheet = client.open("Panneaux Solaires - Publiweb").sheet1
         all_values = sheet.get_all_values()
@@ -210,7 +214,6 @@ def webhook_leads_desinscription_pv():
             return "Numéro à désinscrire non trouvé"
     else:
         return 'Not there'
-
     
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=8080,debug=False)
