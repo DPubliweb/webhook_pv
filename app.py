@@ -176,7 +176,6 @@ def webhook_leads_pv():
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
     print('desinscription pv')
-    
 
     if request.headers['Content-Type'] == 'application/json':
         json_tree = json.loads(request.data)
@@ -190,16 +189,25 @@ def webhook_leads_desinscription_pv():
         all_values = sheet.get_all_values()
         row_number = None
         for index, row in enumerate(all_values):
-                if row[5] == phone_without_plus:  # L'indexation commence à 0, donc la 5ème colonne est à l'index 4
-                    row_number = index + 1  # L'indexation dans les Google Sheets commence à 1
-                    break
-            
+            if row[5] == phone_without_plus:  # L'indexation commence à 0, donc la 5ème colonne est à l'index 4
+                row_number = index + 1  # L'indexation dans les Google Sheets commence à 1
+                break
+
         # Si le numéro est trouvé, mettre à jour la cellule correspondante dans la colonne J (10ème colonne)
         if row_number:
-            sheet.update_cell(row_number, 10, "DÉSINSCRIT")  # La colonne J est la 10ème colonneeets commence à 1, tandis que l'indexation des listes en Python commence à 0.
+            sheet.update_cell(row_number, 10, "DÉSINSCRIT")  # La colonne J est la 10ème colonne
+            # Changer la couleur de fond de la ligne en rouge vif
+            sheet.format(f'A{row_number}:N{row_number}', {
+                "backgroundColor": {
+                    "red": 1.0,
+                    "green": 0.0,
+                    "blue": 0.0
+                }
+            })
+            return "Done"
         else: 
-            print('Numéro à désinscrire')
-        return "Done"
+            print('Numéro à désinscrire non trouvé')
+            return "Numéro à désinscrire non trouvé"
     else:
         return 'Not there'
 
