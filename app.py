@@ -139,8 +139,8 @@ def webhook_leads_pv():
                     sheet.format(f'A{next_row}:N{next_row}', {
                         "backgroundColor": {
                             "red": 1.0,
-                            "green": 0.6,
-                            "blue": 0.6
+                            "green": 0.0,
+                            "blue": 0.0
                         }
                     })
 
