@@ -126,7 +126,7 @@ def webhook_leads_pv():
                 print("Nouveau lead inscrit")
 
                 # Envoi de SMS si les conditions sont remplies
-                if "Appartement ❌" not in type_habitation and "Locataire ❌" not in statut_habitation:
+                if type_habitation != "Appartement ❌" and statut_habitation != "Locataire ❌":
                     try:
                         response = client_vonage.send_message({'from': 'RDV TEL', 'to': phone , 'text': 'Bonjour '+ prenom +' '+nom+'\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier '+code+' Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'})
                         print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
