@@ -195,7 +195,7 @@ def webhook_leads_desinscription_pv():
 
         # Si le numéro est trouvé, mettre à jour la cellule correspondante dans la colonne J (10ème colonne)
         if row_number:
-            sheet.update_cell(row_number, 10, "DÉSINSCRIT")  # La colonne J est la 10ème colonne
+            sheet.update_cell(row_number, 11, "DÉSINSCRIT")  # La colonne J est la 10ème colonne
             # Changer la couleur de fond de la ligne en rouge vif
             sheet.format(f'A{row_number}:N{row_number}', {
                 "backgroundColor": {
