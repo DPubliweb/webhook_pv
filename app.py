@@ -217,7 +217,7 @@ def webhook_leads_desinscription_pv():
         if row_number:
             sheet.update_cell(row_number, 11, "DÉSINSCRIT")  # La colonne J est la 10ème colonne
             # Changer la couleur de fond de la ligne en rouge vif
-            sheet.format(f'A{row_number}:N{row_number}', {
+            sheet.format(f'A{row_number}:O{row_number}', {
                 "backgroundColor": {
                     "red": 1.0,
                     "green": 0.0,
