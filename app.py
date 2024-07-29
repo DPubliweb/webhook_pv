@@ -129,6 +129,12 @@ def webhook_leads_pv():
             if phone not in existing_phones:
                 # Find the next available row
                 next_row = len(all_values) + 1
+
+                # Vérifier si la ligne suivante dépasse le nombre actuel de lignes
+                if next_row > sheet.row_count:
+                    # Ajouter une nouvelle ligne si nécessaire
+                    sheet.add_rows(1)
+
                 # Update the sheet with new lead information
                 sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
