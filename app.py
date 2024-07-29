@@ -48,6 +48,7 @@ client = gspread.authorize(creds)
 # Initialisation globale du client Vonage
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
 
+
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
     global client
@@ -65,17 +66,15 @@ def webhook_leads_pv():
         utm_source = json_tree["form_response"]["hidden"]["utm_source"]
         code = json_tree["form_response"]["hidden"]["code"]
         date = json_tree["form_response"]["submitted_at"]
-        date_sliced = date[:10]
-        form_list = json_tree['form_response']['answers']
-        type_habitation = form_list[0]['choice']['label']
-        statut_habitation = form_list[1]['choice']['label']
-        date_sliced = date[0:10]
-        print("téléphone: ", phone , date_sliced)
-
+        
         # Conversion et formatage de la date
         date_obj = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
         date_sliced = date_obj.strftime("%d-%m-%Y %H:%M")
 
+        form_list = json_tree['form_response']['answers']
+        type_habitation = form_list[0]['choice']['label']
+        statut_habitation = form_list[1]['choice']['label']
+        print("téléphone: ", phone , date_sliced)
 
         # Extract department
         if zipcode:
@@ -123,7 +122,7 @@ def webhook_leads_pv():
                 # Find the next available row
                 next_row = len(all_values) + 1
                 # Update the sheet with new lead information
-                sheet.update(f'A{next_row}:M{next_row}', [[type_habitation, statut_habitation,civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
+                sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
             else:
                 print("Lead déjà existant avec ce numéro de téléphone")
@@ -144,7 +143,6 @@ def webhook_leads_pv():
             return str(e)
     else:
         return "Erreur de format de requête"
-    
 
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
