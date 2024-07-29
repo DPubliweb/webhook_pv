@@ -103,9 +103,9 @@ def webhook_leads_pv():
         # Determine interested clients
         interested_clients = []
         if department:
-            for client, departments in clientInterests.items():
+            for clients, departments in clientInterests.items():
                 if int(department) in departments:
-                    interested_clients.append(client)
+                    interested_clients.append(clients)
 
         try:
             sheet = client.open("Panneaux Solaires - Publiweb").sheet1
