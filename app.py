@@ -141,7 +141,7 @@ def webhook_leads_pv():
 
                 # Change the background color if conditions are met
                 if type_habitation == "Appartement ❌" or statut_habitation == "Locataire ❌":
-                    sheet.format(f'A{next_row}:N{next_row}', {
+                    sheet.format(f'A{next_row}:O{next_row}', {
                         "backgroundColor": {
                             "red": 1.0,
                             "green": 0.0,
