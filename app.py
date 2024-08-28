@@ -102,7 +102,7 @@ def webhook_leads_pv():
             #'Samuel Labiod': [22, 29,35,78],
             #'Dan Amsellem': [34,30,48],
             #'Dan Amsellem DB': [28,45,89,10,41,18],
-            #'Laurent Berdugo': [60,80,02],
+            'Laurent Berdugo': [2,60,80,18,36,27,45,53,72,76],
             #'Emmanuel Toubiana Z1': [37,41,89,58,21,71,85,79,86,03,63,17,16,31,81],
             #Emmanuel Toubiana Z2': [24,33,40,47],
             #'Laurent Berdugo2': [25,39,52,54,55,57,67,68,70,88,90],
