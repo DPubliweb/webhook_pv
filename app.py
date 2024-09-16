@@ -88,30 +88,30 @@ def webhook_leads_pv():
         clientInterests = {
             'André': [  67,68,21,58,71,89,22, 29, 35, 56,18,28,36,37,41,45,8, 10, 51,52,25,39,70,90,77,78,91,92,93,94,95,19,23,87,54, 55, 57,88,59,62,14,50,61,27, 76,44,49,53,72,85,2,60,80,16,17,79,86,11,30,34,66,33,9,32,31,65,81,82,1,7,26,38,42,13,83,84],
             'Benjamin Bohbot' : [16,17,19,21,22,23,29,35,53,56,58,71,79,86,87],
-            #'SN GR': [29,22,56,35,13,84,4,83,33,47],
-            'Samy Nackache SO': [59,62,80,2,60],
-            'Samy Nackache CL': [54,55,5,767,68,88],
+            'Samy Nackache CL': [54,55,57,67,68,88,52,70,90],
+            'Yoel A': [44,49,72,53,85,17,79,86,48],
+            'Yoel NG' : [3, 42, 43, 63, 31, 32, 81, 82],
+            'Yoel SZ': [21,71,63,3,37,41,44,49,53,72],
+            'Yoel BJ1': [25,39,52,54,55,57,67,68,70,88,90],
+            'Yoel BJ': [87, 19, 23, 86, 36, 51, 8,  27, 28, 76, 57, 54, 68, 67, 88 ],            
+            'Dan Amsellem': [28,45,89,10,51,61,72,27,41],
+            'Ruben Nadjar' : [21,71,58,70,25,27,76,11,66,26,64,65],
+            'Laurent Berdugo Z1': [49, 44, 72, 53, 28, 41, 37, 61, 35, 79, 85, 86],
+            'Laurent Berdugo Z2': [44,49,53,72,21,71,63,3,37,41],            
+            'Jeremy Benattar': [13,84,83,6,30,34],
+            'Ruben Nadjar': [21,71,58,70,25,27,76,11,66,26,64,65]
+            #'Zak Sebban': [14,61,76,27,28,60,80,2,59,62,51,10,8],
+            #'Yoel N': [54,57,67,68,88],
+            #Emmanuel Toubiana Z2': [24,33,40,47],
+            #'Yoel TB': [46,12,81,11,34,30,48],
             #'Yoel A2': [31,32,81,82],
             #'Mickael Perez': [44,49,59,80,62,60,77,78,91,92,93,94,95],
-            'Yoel AU': [49,53,72],
-            #'Yoel N': [54,57,67,68,88],
-            'Yoel TB': [46,12,81,11,34,30,48],
-            'Yoel NG' : [3, 42, 43, 63, 31, 32, 81, 82],
-            'Yoel SZ': [44, 49, 72, 53, 85, 17, 79, 86 ,48],
-            #'Yoel BL': [16,17,44,85,86],
-            'Yoel BJ': [87, 19, 23, 86, 36, 51, 8,  27, 28, 76, 57, 54, 68, 67, 88 ],
+            #'SN GR': [29,22,56,35,13,84,4,83,33,47],
+            #'Samy Nackache SO': [59,62,80,2,60],
             #'Samuel Labiod': [22, 29,35,78],
-            'Dan Amsellem': [28,45,89,10,51,61,72,27,41],
             #'Dan Amsellem DB': [28,45,89,10,41,18],
-            'Laurent Berdugo': [60, 80, 2, 18, 36],
-            'Maximilien Taieb': [83, 13, 84, 4, 6,5, 30, 34, 48, 15, 12, 46, 19, 23, 36, 18, 58, 71, 39, 25, 3, 63, 15, 42, 43, 69, 7, 1, 38, 26, 74, 73],
-            #'Emmanuel Toubiana Z1': [37,41,89,58,21,71,85,79,86,03,63,17,16,31,81],
-            #Emmanuel Toubiana Z2': [24,33,40,47],
-            'Laurent Berdugo Z1': [49, 44, 72, 53, 28, 41, 37, 61, 35, 79, 85, 86],
-            'Laurent Berdugo Z2': [44,49,53,72,21,71,63,3,37,41],
+            #'Maximilien Taieb': [83, 13, 84, 4, 6,5, 30, 34, 48, 15, 12, 46, 19, 23, 36, 18, 58, 71, 39, 25, 3, 63, 15, 42, 43, 69, 7, 1, 38, 26, 74, 73],
             #Yoel AU': [44,49,79,85],
-            #'Yoel BJ2': [19,23,31,81,82,87],
-            #'Zak Sebban': [14,61,76,27,28,60,80,2,59,62,51,10,8]
         }
 
         # Determine interested clients
@@ -167,7 +167,7 @@ def webhook_leads_pv():
                         response = client_vonage.send_message({
                             'from': 'RDV TEL',
                             'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https://aud.vc/annulationPVML'
+                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:,/aud.vc/annulationPVML'
                         })
                         print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
 
