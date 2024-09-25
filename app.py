@@ -105,7 +105,7 @@ def webhook_leads_pv():
             #Emmanuel Toubiana Z2': [24,33,40,47],
             #'Yoel TB': [46,12,81,11,34,30,48],
             #'Yoel A2': [31,32,81,82],
-            #'Mickael Perez': [44,49,59,80,62,60,77,78,91,92,93,94,95],
+            'Menahem Aouizerat': [35,44,49 ,53 ,72 ,79 ,85 ,86],
             #'SN GR': [29,22,56,35,13,84,4,83,33,47],
             #'Samy Nackache SO': [59,62,80,2,60],
             #'Samuel Labiod': [22, 29,35,78],
