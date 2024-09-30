@@ -233,8 +233,8 @@ def webhook_leads_desinscription_pv():
     else:
         return 'Not there'
     
-@app.route('/webhook_unbounce_thermostats_bis', methods=['POST'])
-def webhook_unbounce_thermostats_bis():
+@app.route('/webhook_unbounce_pv', methods=['POST'])
+def webhook_unbounce_pv():
     # Assurer que la requête contient des données JSON
     if request.is_json:
         data = request.get_json()
