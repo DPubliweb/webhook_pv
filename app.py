@@ -256,7 +256,7 @@ def webhook_unbounce_pv():
         nom = data.get('nom')
         email = data.get('email')
         page_url = data.get('page_url')
-        code_postal = data.get('code_postal')
+        zipcode = data.get('code_postal')
         date_time = date_submitted + " " + time_submitted
 
                # Conversion et formatage de la date
