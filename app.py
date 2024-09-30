@@ -260,13 +260,12 @@ def webhook_unbounce_pv():
         date_time = date_submitted + " " + time_submitted
 
                # Conversion et formatage de la date
-        date_obj = datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%SZ")
-        date_sliced = date_obj.strftime("%d-%m-%Y %H:%M")
+        
 
         
         type_habitation = ""
         statut_habitation = ""
-        print("téléphone: ", phone , date_sliced)
+        print("téléphone: ", phone , date_time)
 
         # Extract department
         if zipcode:
