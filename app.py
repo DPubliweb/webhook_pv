@@ -247,24 +247,19 @@ def webhook_unbounce_pv():
         prenom = data.get('prenom')
         code = data.get('code')
         date_submitted = data.get('date_submitted')
-        page_uuid = data.get('page_uuid')
-        page_name = data.get('page_name')
-        ip_address = data.get('ip_address')
         phone = data.get('telephone')
-        variant = data.get('variant')
         utm_source = data.get('utm_source')
         nom = data.get('nom')
         email = data.get('email')
-        page_url = data.get('page_url')
+        statut_habitation = data.get('êtesvous_propriétaire_ou_locataire_')
+        type_habitation = data.get('vivezvous_en_maison_ou_en_appartement_')
         zipcode = data.get('code_postal')
         date_time = date_submitted + " " + time_submitted
 
                # Conversion et formatage de la date
         
 
-        
-        type_habitation = ""
-        statut_habitation = ""
+    
         print("téléphone: ", phone , date_time)
 
         # Extract department
