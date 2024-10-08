@@ -88,7 +88,7 @@ def webhook_leads_pv():
         nom = json_tree["form_response"]["hidden"]["nom"]
         prenom = json_tree["form_response"]["hidden"]["prenom"]
         email = json_tree["form_response"]["hidden"]["email"]
-        cohort = json_tree["form_response"]["hidden"]["cohort"]
+        cohort = ""
         zipcode = json_tree["form_response"]["hidden"]["code_postal"]
         civilite = json_tree["form_response"]["hidden"]["civilite"]
         utm_source = json_tree["form_response"]["hidden"]["utm_source"]
