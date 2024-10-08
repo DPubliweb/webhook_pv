@@ -242,7 +242,7 @@ def webhook_unbounce_pv():
 
         # Extraire chaque champ dans une variable
         civilite = data.get('civilite')
-        cohort = data.get('cohort')
+        #cohort = data.get('cohort')
         time_submitted = data.get('time_submitted')
         prenom = data.get('prenom')
         code = data.get('code')
@@ -255,6 +255,7 @@ def webhook_unbounce_pv():
         type_habitation = data.get('vivezvous_en_maison_ou_en_appartement_')
         zipcode = data.get('code_postal')
         date_time = date_submitted + " " + time_submitted
+        cohort = ""
 
                # Conversion et formatage de la date
         
