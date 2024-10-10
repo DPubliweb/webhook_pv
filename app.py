@@ -326,7 +326,7 @@ def webhook_unbounce_pv():
                         response = client_vonage.send_message({
                             'from': 'RDV TEL',
                             'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:,/aud.vc/annulationPVML'
+                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https://vvs.bz/annulationPVML'
                         })
                         print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
 
