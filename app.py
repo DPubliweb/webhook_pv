@@ -187,6 +187,37 @@ def webhook_leads_pv():
     else:
         return jsonify({"status": "error", "message": "Erreur de format de requête"})
 
+def update_existing_leads():
+    print('Début du traitement des leads existants')
+    try:
+        # Accès à la feuille Google Sheets
+        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+        all_values = sheet.get_all_values()
+
+        # Parcourir chaque ligne pour vérifier la colonne O
+        for index, row in enumerate(all_values):
+            # Vérifier si la colonne O (14e index) est vide
+            if len(row) < 15 or not row[14]:  # Colonne O est vide
+                zipcode = row[7]  # Code postal
+                department = zipcode[:2] if zipcode else ''
+                
+                # Déterminer les clients intéressés en fonction du département
+                interested_clients = []
+                if department:
+                    for client, departments in clientInterests.items():
+                        if int(department) in departments:
+                            interested_clients.append(client)
+
+                # Mettre à jour la colonne O avec les clients intéressés
+                if interested_clients:
+                    sheet.update_cell(index + 1, 15, ", ".join(interested_clients))
+                    print(f"Ligne {index + 1} mise à jour avec les clients intéressés : {', '.join(interested_clients)}")
+
+        print("Traitement des leads existants terminé.")
+    except Exception as e:
+        print(f"Erreur lors de la mise à jour des leads existants : {e}")
+
+
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
     print('desinscription pv')
@@ -348,6 +379,7 @@ def webhook_unbounce_pv():
 
 
 if __name__ == "__main__":
+    update_existing_leads()  # Appeler la fonction au déploiement
     app.run(host='0.0.0.0',port=8080,debug=False)
 
     
