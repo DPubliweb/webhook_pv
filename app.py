@@ -29,26 +29,21 @@ KEY_VONAGE = os.environ.get("KEY_VONAGE")
 KEY_VONAGE_SECRET = os.environ.get("KEY_VONAGE_SECRET")
 
 # Initialiser les credentials pour Google Sheets à partir des variables d'environnement
-# Initialiser les credentials pour Google Sheets à partir des variables d'environnement
-try:
-    creds = ServiceAccountCredentials.from_json_keyfile_dict({
-        "type": TYPE,
-        "project_id": PROJECT_ID,
-        "private_key_id": PRIVATE_KEY_ID,
-        "private_key": PRIVATE_KEY.replace("\\n", "\n"),
-        "client_email": CLIENT_EMAIL,
-        "client_id": CLIENT_ID,
-        "auth_uri": AUTH_URI,
-        "token_uri": TOKEN_URI,
-        "auth_provider_x509_cert_url": AUTH_PROVIDER_X509_CERT_URL,
-        "client_x509_cert_url": CLIENT_X509_CERT_URL
-    }, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_dict({
+    "type": TYPE,
+    "project_id": PROJECT_ID,
+    "private_key_id": PRIVATE_KEY_ID,
+    "private_key": PRIVATE_KEY,
+    "client_email": CLIENT_EMAIL,
+    "client_id": CLIENT_ID,
+    "auth_uri": AUTH_URI,
+    "token_uri": TOKEN_URI,
+    "auth_provider_x509_cert_url": AUTH_PROVIDER_X509_CERT_URL,
+    "client_x509_cert_url": CLIENT_X509_CERT_URL
+}, scope)
 
-    # Initialisation du client gspread
-    client = gspread.authorize(creds)
-    print("Google Sheets client initialisé avec succès.")
-except Exception as e:
-    print(f"Erreur lors de l'initialisation de Google Sheets : {e}")
+# Initialisation globale du client gspread
+client = gspread.authorize(creds)
 
 # Initialisation globale du client Vonage
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
