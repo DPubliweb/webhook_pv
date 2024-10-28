@@ -85,6 +85,7 @@ clientInterests = {
 
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
+    global client
     print('arrived lead')
 
     if request.headers['Content-Type'] == 'application/json':
@@ -93,7 +94,7 @@ def webhook_leads_pv():
         nom = json_tree["form_response"]["hidden"]["nom"]
         prenom = json_tree["form_response"]["hidden"]["prenom"]
         email = json_tree["form_response"]["hidden"]["email"]
-        cohort = ""
+        cohort = json_tree["form_response"]["hidden"]["cohort"]
         zipcode = json_tree["form_response"]["hidden"]["code_postal"]
         civilite = json_tree["form_response"]["hidden"]["civilite"]
         utm_source = json_tree["form_response"]["hidden"]["utm_source"]
@@ -117,6 +118,8 @@ def webhook_leads_pv():
         else:
             department = ''
 
+
+
         # Determine interested clients
         interested_clients = []
         if department:
@@ -125,7 +128,6 @@ def webhook_leads_pv():
                     interested_clients.append(clients)
 
         try:
-            # Accéder à Google Sheets sans redeclarer client comme global
             sheet = client.open("Panneaux Solaires - Publiweb").sheet1
             all_values = sheet.get_all_values()
             existing_phones = [row[5] for row in all_values]
@@ -140,7 +142,6 @@ def webhook_leads_pv():
                 if next_row > sheet.row_count:
                     # Ajouter une nouvelle ligne si nécessaire
                     sheet.add_rows(1)
-
                 # Réinitialiser la couleur de fond à blanc
                 sheet.format(f'A{next_row}:O{next_row}', {
                     "backgroundColor": {
