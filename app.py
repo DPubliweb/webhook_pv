@@ -189,6 +189,7 @@ def webhook_leads_pv():
 
 def update_existing_leads():
     print('Début du traitement des leads existants')
+    global client
     try:
         # Accès à la feuille Google Sheets
         sheet = client.open("Panneaux Solaires - Publiweb").sheet1
