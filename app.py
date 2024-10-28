@@ -88,7 +88,7 @@ def webhook_leads_pv():
         nom = json_tree["form_response"]["hidden"]["nom"]
         prenom = json_tree["form_response"]["hidden"]["prenom"]
         email = json_tree["form_response"]["hidden"]["email"]
-        cohort = json_tree["form_response"]["hidden"]["cohort"]
+        cohort = ""
         zipcode = json_tree["form_response"]["hidden"]["code_postal"]
         civilite = json_tree["form_response"]["hidden"]["civilite"]
         utm_source = json_tree["form_response"]["hidden"]["utm_source"]
@@ -112,7 +112,7 @@ def webhook_leads_pv():
         else:
             department = ''
 
-
+        # Define client interests
 
         # Determine interested clients
         interested_clients = []
@@ -136,6 +136,7 @@ def webhook_leads_pv():
                 if next_row > sheet.row_count:
                     # Ajouter une nouvelle ligne si nécessaire
                     sheet.add_rows(1)
+
                 # Réinitialiser la couleur de fond à blanc
                 sheet.format(f'A{next_row}:O{next_row}', {
                     "backgroundColor": {
@@ -166,7 +167,7 @@ def webhook_leads_pv():
                         response = client_vonage.send_message({
                             'from': 'RDV TEL',
                             'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https://vvs.bz/annulationPVML'
+                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML'
                         })
                         print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
 
@@ -187,38 +188,6 @@ def webhook_leads_pv():
             return jsonify({"status": "error", "message": f"Erreur lors de l'interaction avec Google Sheets: {e}"})
     else:
         return jsonify({"status": "error", "message": "Erreur de format de requête"})
-
-def update_existing_leads():
-    print('Début du traitement des leads existants')
-    global client
-    try:
-        # Accès à la feuille Google Sheets
-        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
-        all_values = sheet.get_all_values()
-
-        # Parcourir chaque ligne pour vérifier la colonne O
-        for index, row in enumerate(all_values):
-            # Vérifier si la colonne O (14e index) est vide
-            if len(row) < 15 or not row[14]:  # Colonne O est vide
-                zipcode = row[7]  # Code postal
-                department = zipcode[:2] if zipcode else ''
-                
-                # Déterminer les clients intéressés en fonction du département
-                interested_clients = []
-                if department:
-                    for client, departments in clientInterests.items():
-                        if int(department) in departments:
-                            interested_clients.append(client)
-
-                # Mettre à jour la colonne O avec les clients intéressés
-                if interested_clients:
-                    sheet.update_cell(index + 1, 15, ", ".join(interested_clients))
-                    print(f"Ligne {index + 1} mise à jour avec les clients intéressés : {', '.join(interested_clients)}")
-
-        print("Traitement des leads existants terminé.")
-    except Exception as e:
-        print(f"Erreur lors de la mise à jour des leads existants : {e}")
-
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
@@ -381,7 +350,6 @@ def webhook_unbounce_pv():
 
 
 if __name__ == "__main__":
-    update_existing_leads()  # Appeler la fonction au déploiement
     app.run(host='0.0.0.0',port=8080,debug=False)
 
     
