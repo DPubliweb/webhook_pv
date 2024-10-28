@@ -48,14 +48,14 @@ client = gspread.authorize(creds)
 # Initialisation globale du client Vonage
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
 clientInterests = {
-            'André': [67,68,21,58,71,89,18,28,36,37,41,45,8,10,51,52,25,39,70,90,77,78,91,92,93,94,95,19,23,87,54,55,57,88,59,62,14,50,61,27,76,44,49,53,72,85,2,60,80,16,17,79,86,11,48,22,35,56,47,9,31,32,46,65,81,82,1,7,26,38,42,43,83,84],
+            'André': [67,68,24,3,15,43,63,21,58,71,89,22,35,56,18,28,36,37,41,45,10,51,52,25,39,70,90,11,66,48,19,23,87,2,60,80,44,49,53,72,85,27,76,61,14,9,12,31,32,46,81,82,54,55,57,88,16,17,79,86,1,7,26,38],
             'Benjamin Bohbot' : [3,16,17,19,21,22,23,25,29,35,36,37,49,53,56,58,70,71,72,79,85,86,87],
             'Samy Nackache CL': [54,55,57,67,68,88,52,70,90],
-            #'Yoel A': [31,32,81,82,57,54,68,67,88],
-            'Yoel A1' : [43,48,12,44,49,72,53,85,17,79,86,63],
-            #'Yoel SZ': [21,71,63,3,37,41,44,49,53,72],
+            'Yoel A': [43,48,12,44,49,72,53,85,17,79,86,63],
+            'Yoel N' : [67,68,88,54,57,55,52,70,25,21],
+            'Yoel NG': [3,42,43,63],
             #'Yoel BJ1': [25,39,52,54,55,57,67,68,70,88,90],
-            #'Yoel BJ': [87, 19, 23, 86, 36, 51, 8,  27, 28, 76, 57, 54, 68, 67, 88 ],            
+            'Yoel BJ': [25,39,52,54,55,57,67,68,70,88,90],            
             'Dan Amsellem': [28,45,89,10,51,61,72,27,41],
             #'Ruben Nadjar' : [21,71,58,70,25,27,76,11,66,26,64,65],
             'Laurent Berdugo Z1': [44,49,72,53,85,17,79,86,12,43,48],
@@ -69,8 +69,9 @@ clientInterests = {
             #'Yoel A2': [31,32,81,82],
             #'Mickael Perez': [44,49,59,80,62,60,77,78,91,92,93,94,95],
             #'SN GR': [29,22,56,35,13,84,4,83,33,47],
-            #'Samy Nackache SO': [59,62,80,2,60],
-            #'Samuel Labiod': [22, 29,35,78],
+            'Samy Nackache CL': [54,55,57,67,68,88,52,70,90],
+            'Samy Nackache AC': [44,49,85,35,79,53,72,86,37],
+            'Benjamin Bohbot': [3,16,17,19,21,22,23,25,29,35,36,37,53,56,58,70,71,72,79,86,87],
             #'Dan Amsellem DB': [28,45,89,10,41,18],
             #'Maximilien Taieb': [83, 13, 84, 4, 6,5, 30, 34, 48, 15, 12, 46, 19, 23, 36, 18, 58, 71, 39, 25, 3, 63, 15, 42, 43, 69, 7, 1, 38, 26, 74, 73],
             #Yoel AU': [44,49,79,85],
@@ -112,8 +113,6 @@ def webhook_leads_pv():
         else:
             department = ''
 
-        # Define client interests
-
         # Determine interested clients
         interested_clients = []
         if department:
@@ -128,13 +127,13 @@ def webhook_leads_pv():
 
             print("Numéro de téléphone reçu :", phone)
 
-            if phone not in existing_phones:
+            # Si le numéro est nouveau ou si la colonne O (clients intéressés) est vide, traiter le lead
+            if phone not in existing_phones or (len(row) < 15 or not row[14]):
                 # Find the next available row
                 next_row = len(all_values) + 1
 
-                # Vérifier si la ligne suivante dépasse le nombre actuel de lignes
+                # Ajouter une nouvelle ligne si nécessaire
                 if next_row > sheet.row_count:
-                    # Ajouter une nouvelle ligne si nécessaire
                     sheet.add_rows(1)
 
                 # Réinitialiser la couleur de fond à blanc
@@ -149,7 +148,6 @@ def webhook_leads_pv():
                 # Update the sheet with new lead information
                 sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
-
 
                 # Change the background color if conditions are met
                 if type_habitation == "Appartement ❌" or statut_habitation == "Locataire ❌":
@@ -167,9 +165,9 @@ def webhook_leads_pv():
                         response = client_vonage.send_message({
                             'from': 'RDV TEL',
                             'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML'
+                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https://vvs.bz/annulationPVML'
                         })
-                        print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
+                        print("Réponse de Vonage:", response)
 
                         if response['messages'][0]['status'] != '0':
                             print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
@@ -181,8 +179,8 @@ def webhook_leads_pv():
                 else:
                     return jsonify({"status": "success", "message": "Enregistrement réussi sans envoi de SMS."})
             else:
-                print("Lead déjà existant avec ce numéro de téléphone")
-                return jsonify({"status": "duplicate", "message": "Lead déjà existant avec ce numéro de téléphone"})
+                print("Lead déjà existant avec ce numéro de téléphone et déjà traité")
+                return jsonify({"status": "duplicate", "message": "Lead déjà existant et déjà traité"})
         except Exception as e:
             print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
             return jsonify({"status": "error", "message": f"Erreur lors de l'interaction avec Google Sheets: {e}"})
