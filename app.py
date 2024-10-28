@@ -113,6 +113,8 @@ def webhook_leads_pv():
         else:
             department = ''
 
+        # Define client interests
+
         # Determine interested clients
         interested_clients = []
         if department:
@@ -127,13 +129,13 @@ def webhook_leads_pv():
 
             print("Numéro de téléphone reçu :", phone)
 
-            # Si le numéro est nouveau ou si la colonne O (clients intéressés) est vide, traiter le lead
-            if phone not in existing_phones or (len(row) < 15 or not row[14]):
+            if phone not in existing_phones:
                 # Find the next available row
                 next_row = len(all_values) + 1
 
-                # Ajouter une nouvelle ligne si nécessaire
+                # Vérifier si la ligne suivante dépasse le nombre actuel de lignes
                 if next_row > sheet.row_count:
+                    # Ajouter une nouvelle ligne si nécessaire
                     sheet.add_rows(1)
 
                 # Réinitialiser la couleur de fond à blanc
@@ -148,6 +150,7 @@ def webhook_leads_pv():
                 # Update the sheet with new lead information
                 sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
+
 
                 # Change the background color if conditions are met
                 if type_habitation == "Appartement ❌" or statut_habitation == "Locataire ❌":
@@ -165,9 +168,9 @@ def webhook_leads_pv():
                         response = client_vonage.send_message({
                             'from': 'RDV TEL',
                             'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https://vvs.bz/annulationPVML'
+                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML'
                         })
-                        print("Réponse de Vonage:", response)
+                        print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
 
                         if response['messages'][0]['status'] != '0':
                             print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
@@ -179,8 +182,8 @@ def webhook_leads_pv():
                 else:
                     return jsonify({"status": "success", "message": "Enregistrement réussi sans envoi de SMS."})
             else:
-                print("Lead déjà existant avec ce numéro de téléphone et déjà traité")
-                return jsonify({"status": "duplicate", "message": "Lead déjà existant et déjà traité"})
+                print("Lead déjà existant avec ce numéro de téléphone")
+                return jsonify({"status": "duplicate", "message": "Lead déjà existant avec ce numéro de téléphone"})
         except Exception as e:
             print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
             return jsonify({"status": "error", "message": f"Erreur lors de l'interaction avec Google Sheets: {e}"})
