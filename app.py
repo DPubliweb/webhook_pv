@@ -85,7 +85,6 @@ clientInterests = {
 
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
-    global client
     print('arrived lead')
 
     if request.headers['Content-Type'] == 'application/json':
@@ -118,8 +117,6 @@ def webhook_leads_pv():
         else:
             department = ''
 
-        # Define client interests
-
         # Determine interested clients
         interested_clients = []
         if department:
@@ -128,6 +125,7 @@ def webhook_leads_pv():
                     interested_clients.append(clients)
 
         try:
+            # Accéder à Google Sheets sans redeclarer client comme global
             sheet = client.open("Panneaux Solaires - Publiweb").sheet1
             all_values = sheet.get_all_values()
             existing_phones = [row[5] for row in all_values]
@@ -173,7 +171,7 @@ def webhook_leads_pv():
                         response = client_vonage.send_message({
                             'from': 'RDV TEL',
                             'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML'
+                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https://vvs.bz/annulationPVML'
                         })
                         print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
 
