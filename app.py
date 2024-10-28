@@ -77,7 +77,6 @@ clientInterests = {
             #Yoel AU': [44,49,79,85],
         }
 
-
 @app.route('/leads_pv', methods=['GET', 'POST'])
 def webhook_leads_pv():
     global client
