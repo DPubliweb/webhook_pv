@@ -6,6 +6,8 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import nexmo
 from dotenv import load_dotenv
+import time
+import threading
 
 load_dotenv()
 
@@ -44,7 +46,139 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict({
 
 # Initialisation globale du client gspread
 client = gspread.authorize(creds)
+# Fichier pour stocker la file d'attente
+QUEUE_FILE = "leads_queue.json"
 
+# Initialisation de la file d'attente persistante
+if not os.path.exists(QUEUE_FILE):
+    with open(QUEUE_FILE, 'w') as f:
+        json.dump([], f)
+
+# Fonction pour ajouter un lead à la file d'attente
+def add_to_queue(lead):
+    with open(QUEUE_FILE, 'r+') as f:
+        leads = json.load(f)
+        leads.append(lead)
+        f.seek(0)
+        json.dump(leads, f)
+
+# Fonction pour retirer un lead de la file d'attente
+def pop_from_queue():
+    with open(QUEUE_FILE, 'r+') as f:
+        leads = json.load(f)
+        if not leads:
+            return None
+        lead = leads.pop(0)
+        f.seek(0)
+        json.dump(leads, f)
+        f.truncate()
+        return lead
+
+# Fonction principale pour traiter un lead
+def process_lead(lead):
+    global client, client_vonage
+
+    try:
+        phone = lead["form_response"]["hidden"]["telephone"]
+        nom = lead["form_response"]["hidden"]["nom"]
+        prenom = lead["form_response"]["hidden"]["prenom"]
+        email = lead["form_response"]["hidden"]["email"]
+        zipcode = lead["form_response"]["hidden"]["code_postal"]
+        civilite = lead["form_response"]["hidden"]["civilite"]
+        utm_source = lead["form_response"]["hidden"]["utm_source"]
+        code = lead["form_response"]["hidden"]["code"]
+        date = lead["form_response"]["submitted_at"]
+
+        # Conversion et formatage de la date
+        date_obj = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+        date_sliced = date_obj.strftime("%d-%m-%Y %H:%M")
+
+        form_list = lead['form_response']['answers']
+        type_habitation = form_list[0]['choice']['label']
+        statut_habitation = form_list[1]['choice']['label']
+
+        print("Téléphone:", phone, date_sliced)
+
+        # Gestion du département
+        if zipcode:
+            if len(zipcode) == 4:
+                zipcode = '0' + zipcode
+            department = zipcode[:2]
+        else:
+            department = ''
+
+        # Gestion des clients intéressés
+        interested_clients = []
+        if department:
+            for clients, departments in clientInterests.items():
+                if int(department) in departments:
+                    interested_clients.append(clients)
+
+        # Interaction avec Google Sheets
+        sheet = client.open("Panneaux Solaires - Publiweb").sheet1
+        all_values = sheet.get_all_values()
+        existing_phones = [row[5] for row in all_values]
+
+        if phone not in existing_phones:
+            next_row = len(all_values) + 1
+
+            if next_row > sheet.row_count:
+                sheet.add_rows(1)
+
+            sheet.format(f'A{next_row}:O{next_row}', {
+                "backgroundColor": {
+                    "red": 1.0,
+                    "green": 1.0,
+                    "blue": 1.0
+                }
+            })
+
+            sheet.update(f'A{next_row}:N{next_row}', [[
+                type_habitation, statut_habitation, civilite, nom, prenom, phone, email,
+                zipcode, code, utm_source, "", date_sliced, department, ", ".join(interested_clients)
+            ]])
+            print("Nouveau lead inscrit")
+
+            # Gestion des couleurs en fonction des critères
+            if type_habitation == "Appartement ❌" or statut_habitation == "Locataire ❌":
+                sheet.format(f'A{next_row}:O{next_row}', {
+                    "backgroundColor": {
+                        "red": 1.0,
+                        "green": 0.0,
+                        "blue": 0.0
+                    }
+                })
+
+            # Envoi de SMS
+            if type_habitation != "Appartement ❌" and statut_habitation != "Locataire ❌":
+                response = client_vonage.send_message({
+                    'from': 'RDV TEL',
+                    'to': phone,
+                    'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML'
+                })
+                print("Réponse de Vonage:", response)
+                if response['messages'][0]['status'] != '0':
+                    print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
+        else:
+            print("Lead déjà existant avec ce numéro de téléphone")
+
+    except Exception as e:
+        print(f"Erreur lors du traitement du lead : {e}")
+        # Réajouter le lead en cas d'échec
+        add_to_queue(lead)
+
+# Worker pour traiter les leads en arrière-plan
+def worker():
+    while True:
+        lead = pop_from_queue()
+        if lead:
+            process_lead(lead)
+        else:
+            time.sleep(5)
+
+# Démarrage du worker en arrière-plan
+thread = threading.Thread(target=worker, daemon=True)
+thread.start()
 # Initialisation globale du client Vonage
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
 clientInterests = {
@@ -77,117 +211,18 @@ clientInterests = {
             'Samy Nackache CL': [54,55,57,67,68,88,52,70,90],
         }
 
-@app.route('/leads_pv', methods=['GET', 'POST'])
+@app.route('/leads_pv', methods=['POST'])
 def webhook_leads_pv():
-    global client
-    print('arrived lead')
-
-    if request.headers['Content-Type'] == 'application/json':
-        json_tree = json.loads(request.data)
-        phone = json_tree["form_response"]["hidden"]["telephone"]
-        nom = json_tree["form_response"]["hidden"]["nom"]
-        prenom = json_tree["form_response"]["hidden"]["prenom"]
-        email = json_tree["form_response"]["hidden"]["email"]
-        cohort = ""
-        zipcode = json_tree["form_response"]["hidden"]["code_postal"]
-        civilite = json_tree["form_response"]["hidden"]["civilite"]
-        utm_source = json_tree["form_response"]["hidden"]["utm_source"]
-        code = json_tree["form_response"]["hidden"]["code"]
-        date = json_tree["form_response"]["submitted_at"]
-        
-        # Conversion et formatage de la date
-        date_obj = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-        date_sliced = date_obj.strftime("%d-%m-%Y %H:%M")
-
-        form_list = json_tree['form_response']['answers']
-        type_habitation = form_list[0]['choice']['label']
-        statut_habitation = form_list[1]['choice']['label']
-        print("téléphone: ", phone , date_sliced)
-
-        # Extract department
-        if zipcode:
-            if len(zipcode) == 4:
-                zipcode = '0' + zipcode
-            department = zipcode[:2]
+    try:
+        if request.headers['Content-Type'] == 'application/json':
+            lead_data = json.loads(request.data)
+            add_to_queue(lead_data)  # Ajouter le lead à la file d'attente
+            return jsonify({"status": "success", "message": "Lead ajouté à la file d'attente."})
         else:
-            department = ''
-
-        # Define client interests
-
-        # Determine interested clients
-        interested_clients = []
-        if department:
-            for clients, departments in clientInterests.items():
-                if int(department) in departments:
-                    interested_clients.append(clients)
-
-        try:
-            sheet = client.open("Panneaux Solaires - Publiweb").sheet1
-            all_values = sheet.get_all_values()
-            existing_phones = [row[5] for row in all_values]
-
-            print("Numéro de téléphone reçu :", phone)
-
-            if phone not in existing_phones:
-                # Find the next available row
-                next_row = len(all_values) + 1
-
-                # Vérifier si la ligne suivante dépasse le nombre actuel de lignes
-                if next_row > sheet.row_count:
-                    # Ajouter une nouvelle ligne si nécessaire
-                    sheet.add_rows(1)
-
-                # Réinitialiser la couleur de fond à blanc
-                sheet.format(f'A{next_row}:O{next_row}', {
-                    "backgroundColor": {
-                        "red": 1.0,
-                        "green": 1.0,
-                        "blue": 1.0
-                    }
-                })
-
-                # Update the sheet with new lead information
-                sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_sliced, department, ", ".join(interested_clients)]])
-                print("Nouveau lead inscrit")
-
-
-                # Change the background color if conditions are met
-                if type_habitation == "Appartement ❌" or statut_habitation == "Locataire ❌":
-                    sheet.format(f'A{next_row}:O{next_row}', {
-                        "backgroundColor": {
-                            "red": 1.0,
-                            "green": 0.0,
-                            "blue": 0.0
-                        }
-                    })
-
-                # Envoi de SMS si les conditions sont remplies
-                if type_habitation != "Appartement ❌" and statut_habitation != "Locataire ❌":
-                    try:
-                        response = client_vonage.send_message({
-                            'from': 'RDV TEL',
-                            'to': phone,
-                            'text': f'Bonjour {prenom} {nom}\nMerci pour votre demande\nUn conseiller vous recontactera sous 24h à 48h\n\nPour sécuriser votre parcours, veuillez noter votre code dossier {code}. Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML'
-                        })
-                        print("Réponse de Vonage:", response)  # Log pour la réponse de Vonage
-
-                        if response['messages'][0]['status'] != '0':
-                            print("Erreur lors de l'envoi du message:", response['messages'][0]['error-text'])
-                            return jsonify({"status": "error", "message": response['messages'][0]['error-text']})
-                        return jsonify({"status": "success", "message": "Enregistrement réussi!"})
-                    except Exception as e:
-                        print("Erreur lors de l'envoi du message via Vonage:", e)
-                        return jsonify({"status": "error", "message": str(e)})
-                else:
-                    return jsonify({"status": "success", "message": "Enregistrement réussi sans envoi de SMS."})
-            else:
-                print("Lead déjà existant avec ce numéro de téléphone")
-                return jsonify({"status": "duplicate", "message": "Lead déjà existant avec ce numéro de téléphone"})
-        except Exception as e:
-            print(f"Erreur lors de l'interaction avec Google Sheets: {e}")
-            return jsonify({"status": "error", "message": f"Erreur lors de l'interaction avec Google Sheets: {e}"})
-    else:
-        return jsonify({"status": "error", "message": "Erreur de format de requête"})
+            return jsonify({"status": "error", "message": "Format de requête incorrect"})
+    except Exception as e:
+        print(f"Erreur inattendue : {e}")
+        return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
