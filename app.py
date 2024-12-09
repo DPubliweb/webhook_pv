@@ -341,7 +341,7 @@ def webhook_unbounce_pv():
                 })
 
                 # Update the sheet with new lead information
-                sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, cohort, date_time, department, ", ".join(interested_clients)]])
+                sheet.update(f'A{next_row}:N{next_row}', [[type_habitation, statut_habitation, civilite, nom, prenom, phone, email, zipcode, code, utm_source, ' ', date_time, department, ", ".join(interested_clients)]])
                 print("Nouveau lead inscrit")
 
 
