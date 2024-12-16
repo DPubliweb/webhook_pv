@@ -182,7 +182,7 @@ thread.start()
 # Initialisation globale du client Vonage
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
 clientInterests = {
-            'André': [22,29,56,39,25,70,90,14,61,27,76,62,59,30,16,17,87,23,03,63,15,43,19,33,47],
+            'André': [22,29,56,39,25,70,90,14,61,27,76,62,59,30,16,17,87,23,3,63,15,43,19,33,47],
 
             #'Yoel A2': [44,49,72,53,85,17,79,43,48,12,50],
             #'Yoel N' : [67,68,88,54,57,55,52,70,25,21],
