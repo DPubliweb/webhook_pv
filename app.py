@@ -205,7 +205,7 @@ clientInterests = {
             #'Dan Benamou': [33,16,17,86],
             #'Yoel A2': [55,88,36,37,41,45,18,59,62,14,50,61],
             #'Mickael Perez': [44,49,59,80,62,60,77,78,91,92,93,94,95],
-            #'Samy Naccache DZ': [27,28,45,77,60,78,95,91,93,94,92,67,68,88,57,54,55],
+            'Samy Naccache DZ': [54,55,57,88,52,70],
             'Samy Nackache LC': [16,17,86],
             'Samy Nackache SAV': [60,80,2],
             'Samy Naccache RH' : [13,83,84,30,4],
