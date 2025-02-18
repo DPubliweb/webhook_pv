@@ -209,7 +209,7 @@ clientInterests = {
             'Samy Nackache GENCY': [21,71,1],
             'Samy Naccache SAV ' : [60,80,2],
             'Samy Nackache NAKISS': [54,55,57,70,88],
-            #'Alex Benhamou' : [76, 27, 28, 45],
+            'Alex Benhamou' : [76, 27, 28, 45],
         }
 
 @app.route('/leads_pv', methods=['POST'])
