@@ -207,7 +207,7 @@ clientInterests = {
             #'Samy Naccache LR': [87,19,23,31,81,82],
             #'Samy Nackache AS': [87,19,86,36,23,45,10,89],
             'Samy Nackache THC': [22,29,56,35],
-            'Samy Naccache GENCY ' : [21,1,71,39],
+            'Samy Naccache LR ' : [31,81,82,32,9],
             #'Samy Nackache NAKISS': [54,55,57,70,88],
             #'Alex Benhamou' : [76, 27, 28, 45],
         }
