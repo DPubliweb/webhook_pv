@@ -186,7 +186,7 @@ clientInterests = {
             'Yoel A': [38,1,42,26],
             'Yoel ST' : [25,70,90,39],
             'David Madar': [14,53,61,72],
-            #'David Berreby': [33,28,41,12,47,19,79],
+            'Nath Chetrit': [36,18,21,71],
             #'Daniel Zerdoun' : [54,55,57,67,68,88],
             #'Laurent Berdugo ': [54,55,57,51,10,52,],
             #'Benjamin Bohbot': [16,19,22,23,25,35,36,53,56,70,71,72,86,87],
