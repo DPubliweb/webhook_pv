@@ -200,7 +200,7 @@ clientInterests = {
             'Ethan Baruk': [10,51,8,52,55,89],
             #'Dorian Lancry': [28,60,80,27,76,37,41,72,49,79,86,91,92,93,95,95,75,77,78],
             #'Yoel A2': [1,38,26,42],
-            'Gary Cohen': [6,30,34,38,69],
+            'Gary Cohen': [6,30,34,38,69], 
             'Axel Zarka': [14,50,19,87,33,17],
             'Yoel SE': [12,46],
             #'Samy SO': [59,62,80,60,2],
@@ -208,7 +208,7 @@ clientInterests = {
             #'Samy Nackache AS': [87,19,86,36,23,45,10,89],
             'Samy Nackache THC': [22,29,56,35],
             'Samy Naccache SDS ' : [33,47,24],
-            #'Samy Nackache NAKISS': [54,55,57,70,88],
+            'Samy Nackache NAKISS': [54,55,57,70,88],
             #'Alex Benhamou' : [76, 27, 28, 45],
         }
 
