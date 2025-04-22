@@ -203,7 +203,7 @@ clientInterests = {
             #'Gary Cohen': [6,30,34,38,69], 
             'Samy Nackache RKBH': [72,53,37,41,86,44,49,85,79],
             'Yoel SE': [12,46],
-            #'Samy SO': [59,62,80,60,2],
+            'Samy SO': [59,62,80,60,2],
             'Samy Naccache LR': [31,81,82,32,9],
             'Yoel A2': [61,53,35,72],
             'Yoel A3': [40,24,47,33],
