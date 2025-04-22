@@ -207,7 +207,7 @@ clientInterests = {
             'Samy Naccache LR': [31,81,82,32,9],
             'Yoel A2': [61,53,35,72],
             'Yoel A3': [40,24,47,33],
-            #'Samy Naccache SDS ' : [33,47,24],
+            'Yoel A4 ' : [21,58,89,28,45],
             #'Samy Nackache NAKISS': [54,55,57,70,88],
             'Axel Zarka' : [14,50,19,87,17],
         }
