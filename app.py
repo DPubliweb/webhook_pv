@@ -209,7 +209,7 @@ clientInterests = {
             'Yoel A3': [53,35,72],
             'Yoel A4 ' : [44,35,85,37,41,53,72,86,49,79],
             'Samy Nackache NAKISS': [54,55,57,70,88],
-            'Axel Zarka' : [14,50,19,87,76,33],
+            'Axel Zarka' : [14,50,19,87,76,16,17],
         }
 
 @app.route('/leads_pv', methods=['POST'])
