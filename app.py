@@ -182,12 +182,12 @@ thread.start()
 # Initialisation globale du client Vonage
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
 clientInterests = {
-            'David Madar': [60,72,62,59,80,02,28,45],
+            'David Madar': [60,72,62,59,80,2,28,45],
             'Gary Cohen': [06,30,34,38,69], 
             'André': [22,29,35,56,50,14,61,72,53,49,44,85,76,27,60,80,2,59,62,8,51,10,52,55,54,57,88,58,89,21,71,18,45,28,41,37,36,86,79,16,17,24,33,40,64,65,31,32,47,82,46,12,81,9,19,87,23,3,63,43,15,7,42,1,38,26,84,48,11],
             #'Samy SO': [59,62,80,60,02],
             #'Samy Nackache NAKISS': [54,55,57,70,88],
-            'Axel Zarka' : [87,23,19,63,03,42,43,15],
+            'Axel Zarka' : [87,23,19,63,3,42,43,15],
         }
 
 @app.route('/leads_pv', methods=['POST'])
