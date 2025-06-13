@@ -191,9 +191,9 @@ clientInterests = {
             'Yoel greenberg SE': [12,46,15,64,65], 
             'Yoel greenberg MB': [12,46,82,81], 
             'Yoel greenberg RD': [55,52,70,21,25,88,57], 
-            'Samy Nakiss : [54,55,57,70,88,68,90],
-            'Samy GLC: [24,87,19,23,16],
-            'Samy THC: [22,29,56,35],
+            'Samy Nakiss' : [54,55,57,70,88,68,90],
+            'Samy GLC': [24,87,19,23,16],
+            'Samy THC': [22,29,56,35],
             'Axel Zarka' : [14,16,17,19,50,76,87],
         }
 
