@@ -196,6 +196,7 @@ clientInterests = {
             'Samy Nakiss' : [54,55,57,70,88,68,90],
             'Samy GLC': [24,87,19,23,16],
             'Samy THC': [22,29,56,35],
+            'Samy KR': [70,39,25],
             'Axel Zarka' : [14,16,17,19,50,76,87],
         }
 
