@@ -188,6 +188,7 @@ clientInterests = {
             #'Samy YE': [31,81,82,65,46,12,34, 9,11,66],
             'Yoel greenberg A': [1,38,26,19,23,87],
             'Yoel greenberg A2': [13,83,84,30],
+            'Yoel greenberg A3': [2,28,45,60,80],
             'Yoel greenberg SE': [12,46,15,64,65], 
             'Yoel greenberg MB': [12,46,82,81], 
             'Yoel greenberg RD': [55,52,70,21,25,88,57], 
