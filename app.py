@@ -195,7 +195,7 @@ clientInterests = {
             #'Yoel greenberg RC': [14,50,76,53,72,11,66,34,31,81],
             #'Yoel greenberg HS': [19,23,87],  
             #'Samy Nakiss' : [54,55,57,70,88,68,90],
-            #'Samy GLC': [24,87,19,23,16],
+            'Samy OSL': [51,10,2,60,77],
             #'Samy THC': [22,29,56,35],
             #'Samy KR': [70,39,25],
             #'Laurent Berdugo': [44,49,85,79,35,37,86],
