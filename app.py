@@ -191,7 +191,7 @@ clientInterests = {
             #'Yoel greenberg A3': [2,28,45,60,80],
             #'Yoel greenberg SE': [12,46,15,64,65], 
             #'Yoel greenberg MB': [12,46,82,81], 
-            #'Yoel greenberg RD': [55,52,70,21,25,88,57], 
+            'Yoel greenberg RD': [8,51,10,55,52,57,70,68,88,25], 
             #'Yoel greenberg RC': [14,50,76,53,72,11,66,34,31,81],
             #'Yoel greenberg HS': [19,23,87],  
             #'Samy Nakiss' : [54,55,57,70,88,68,90],
