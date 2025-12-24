@@ -8,6 +8,7 @@ import nexmo
 from dotenv import load_dotenv
 import time
 import threading
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -203,18 +204,81 @@ clientInterests = {
             #'Jeremy Cohen' : [45,41,51,10,89,27,28]
         }
 
-@app.route('/leads_pv', methods=['POST'])
+from datetime import datetime
+
+def parse_iso(dt_str: str) -> str:
+    if not dt_str:
+        return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Supporte avec ou sans millisecondes
+    for fmt in ("%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"):
+        try:
+            dt = datetime.strptime(dt_str, fmt)
+            return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            pass
+    # fallback
+    return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def normalize_lead(data: dict) -> dict:
+    # Si déjà au format typeform, on laisse
+    if isinstance(data, dict) and "form_response" in data:
+        return data
+
+    # Sinon, payload React "plat" -> on convertit en structure attendue par process_lead
+    prop = data.get("property_type", "")
+    own = data.get("ownership_status", "")
+
+    type_label = "Maison ✅" if prop == "house" else "Appartement ❌" if prop == "apartment" else ""
+    own_label  = "Propriétaire ✅" if own == "owner" else "Locataire ❌" if own == "tenant" else ""
+
+    return {
+        "form_response": {
+            "hidden": {
+                "telephone": data.get("telephone", ""),
+                "nom": data.get("nom", ""),
+                "prenom": data.get("prenom", ""),
+                "email": data.get("email", ""),
+                "code_postal": data.get("code_postal", ""),
+                "civilite": data.get("civilite", ""),
+                "utm_source": data.get("utm_source", ""),
+                "code": data.get("code", ""),
+            },
+            # ton process_lead lit submitted_at
+            "submitted_at": parse_iso(data.get("timestamp") or data.get("submitted_at")),
+            # ton process_lead lit answers[0] et answers[1]
+            "answers": [
+                {"type": "choice", "choice": {"label": type_label}},
+                {"type": "choice", "choice": {"label": own_label}},
+            ]
+        },
+        # optionnel
+        "page": data.get("page", "")
+    }
+
+
+@app.route('/leads_pv', methods=['POST', 'OPTIONS'])
 def webhook_leads_pv():
+    # preflight CORS
+    if request.method == 'OPTIONS':
+        return ("", 204)
+
     try:
-        if request.headers['Content-Type'] == 'application/json':
-            lead_data = json.loads(request.data)
-            add_to_queue(lead_data)  # Ajouter le lead à la file d'attente
-            return jsonify({"status": "success", "message": "Lead ajouté à la file d'attente."})
-        else:
-            return jsonify({"status": "error", "message": "Format de requête incorrect"})
+        data = request.get_json(silent=True)
+        if not data:
+            print("❌ /leads_pv: pas de JSON ou JSON invalide")
+            return jsonify({"status": "error", "message": "Invalid JSON"}), 400
+
+        lead = normalize_lead(data)
+        print("✅ /leads_pv reçu :", lead.get("form_response", {}).get("hidden", {}))
+
+        add_to_queue(lead)
+        return jsonify({"status": "success", "message": "Lead ajouté à la file d'attente."}), 200
+
     except Exception as e:
-        print(f"Erreur inattendue : {e}")
-        return jsonify({"status": "error", "message": str(e)})
+        print(f"Erreur inattendue /leads_pv : {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route('/leads_desinscription_pv', methods=['GET', 'POST'])
 def webhook_leads_desinscription_pv():
