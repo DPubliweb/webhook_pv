@@ -15,6 +15,9 @@ from dotenv import load_dotenv
 
 import psycopg2
 from psycopg2.pool import SimpleConnectionPool
+import re
+import unicodedata
+
 
 
 # ============================================================
@@ -100,6 +103,18 @@ def _first_ip(xff: str) -> str:
         return ""
     return xff.split(",")[0].strip()
 
+
+def _norm_txt(s: str) -> str:
+    if not s:
+        return ""
+    # enlève les étoiles typeform "*...*"
+    s = s.replace("*", " ")
+    # minuscules + suppression accents
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode("ascii")
+    s = s.lower()
+    # espaces clean
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
 def parse_iso(dt_str: str) -> str:
     """
@@ -368,7 +383,8 @@ def pop_from_queue():
 # Client interests (unchanged)
 # ============================================================
 clientInterests = {
-    "André": [62,14,50,61,29,56,22,35,53,44,49,85,72,28,27,76,60,80,2,8,51,10,55,54,57,88,52,70,39,25,90,21,71,89,45,18,41,37,36,86,79,17,16,87,19,23,58,42,69,1,38,26,7,46,24,33,40,47,32,65,12,48,68,67,84,4,59,82,81],
+    "André": [62,14,50,61,29,56,22,35,53,44,49,85,72,28,27,76,60,80,2,8,51,10,55,54,57,88,52,70,39,25,90,21,71,89,45,18,41,37,36,86,79,17,16,87,19,23,58,42,69,1,38,26,7,46,24,33,40,47,32,65,12,48,68,67,84,4,59,82,81
+],
     'Alex Benamou': [27,28,45,60,76],
 
 }
@@ -388,11 +404,40 @@ def normalize_lead(data: dict) -> dict:
     if isinstance(data, dict) and "form_response" in data:
         fr = data.get("form_response", {})
         fr["submitted_at"] = parse_iso(fr.get("submitted_at"))
+
+        # --- ✅ ADAPTATION NOUVELLE QUESTION "tout en une" ---
+        answers = fr.get("answers", []) or []
+        if len(answers) == 1:
+            raw_label = (answers[0].get("choice", {}) or {}).get("label", "") or ""
+            label = _norm_txt(raw_label)
+
+            type_label = ""
+            own_label = ""
+
+            # habitation
+            if "maison" in label:
+                type_label = "Maison ✅"
+            elif "appartement" in label:
+                type_label = "Appartement ❌"
+
+            # statut
+            # (on cherche propriétaire / locataire)
+            if "propriet" in label:      # couvre proprietaire / propriete...
+                own_label = "Propriétaire ✅"
+            elif "locat" in label:       # couvre locataire / location...
+                own_label = "Locataire ❌"
+
+            # Si on a pu déduire au moins un des 2, on réécrit le format attendu
+            if type_label or own_label:
+                fr["answers"] = [
+                    {"type": "choice", "choice": {"label": type_label}},
+                    {"type": "choice", "choice": {"label": own_label}},
+                ]
+
         data["form_response"] = fr
         return data
 
-    # Payload React "plat" :
-    # On prend reponse_1/reponse_2 comme source principale.
+    # Payload React "plat" (inchangé)
     prop = data.get("property_type") or data.get("reponse_1") or data.get("propertyType") or ""
     own = data.get("ownership_status") or data.get("reponse_2") or data.get("ownershipStatus") or ""
 
@@ -419,8 +464,6 @@ def normalize_lead(data: dict) -> dict:
         },
         "page": data.get("page", ""),
     }
-
-
 # ============================================================
 # process_lead (UNCHANGED, juste sécurisation parse date)
 # ============================================================
