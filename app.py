@@ -623,34 +623,6 @@ threading.Thread(target=worker, daemon=True).start()
 # Routes
 # ============================================================
 
-@app.route("/sms-webhook", methods=["POST"])
-def sms_webhook():
-
-    received_secret = request.headers.get("X-Webhook-Secret")
-
-    if received_secret != WEBHOOK_SECRET:
-        print("❌ Secret invalide :", received_secret)
-        return jsonify({"error": "unauthorized"}), 401
-
-    print("\n===== SMS WEBHOOK =====")
-
-    print("Headers:")
-    for k, v in request.headers.items():
-        print(f"{k}: {v}")
-
-    print("\nRaw body:")
-    print(request.get_data(as_text=True))
-
-    try:
-        print("\nJSON:")
-        print(request.get_json())
-    except:
-        pass
-
-    print("=======================\n")
-
-    return jsonify({"status": "ok"}), 200
-
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "time": _utc_iso()}), 200
