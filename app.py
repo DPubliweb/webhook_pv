@@ -1,5 +1,7 @@
 import os
 import json
+import hmac
+import hashlib
 import time
 import threading
 from datetime import datetime
@@ -75,6 +77,23 @@ client = gspread.authorize(creds)
 
 # Vonage client
 client_vonage = nexmo.Client(key=KEY_VONAGE, secret=KEY_VONAGE_SECRET)
+
+
+API_KEY = os.getenv("SENDDO_API_KEY")
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+
+
+def verify_signature(signature, timestamp):
+    message = f"{API_KEY}{timestamp}{WEBHOOK_SECRET}".encode()
+
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        message,
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(expected, signature)
+
 
 # ============================================================
 # Redshift env (NEW)
@@ -637,43 +656,50 @@ def health():
     return jsonify({"ok": True, "time": _utc_iso()}), 200
 
 
-@app.route("/leads_pv", methods=["POST", "OPTIONS"])
-def webhook_leads_pv():
-    # preflight CORS
-    if request.method == "OPTIONS":
-        return ("", 204)
 
-    try:
-        data = request.get_json(silent=True)
-        if not data or not isinstance(data, dict):
-            print("❌ /leads_pv: JSON invalide")
-            return jsonify({"status": "error", "message": "Invalid JSON"}), 400
+@app.route("/sms-webhook", methods=["POST"])
+def sms_webhook():
+    payload = request.get_json()
 
-        # ---- 1) Redshift (NEW) ----
-        # On essaye d'insérer; si ça échoue, on requeue pour retry.
-        try:
-            row = normalize_redshift_row(data, request)
-            insert_redshift_row(row)
-            print("✅ Redshift insert OK")
-        except Exception as e:
-            print("❌ Redshift insert failed (queued):", str(e))
-            try:
-                row = normalize_redshift_row(data, request)
-                add_to_redshift_queue(row)
-            except Exception as e2:
-                print("❌ Redshift queue failed:", str(e2))
-            # Important: on ne bloque pas le pipeline Google Sheet
+    if not payload or "event" not in payload:
+        return jsonify({"error": "invalid payload"}), 400
 
-        # ---- 2) Google Sheets pipeline (OLD) ----
-        lead = normalize_lead(data)
-        print("✅ /leads_pv reçu (hidden):", lead.get("form_response", {}).get("hidden", {}))
-        add_to_queue(lead)
+    event = payload["event"]
+    signature = event.get("signature")
+    timestamp = event.get("timestamp")
 
-        return jsonify({"status": "success", "message": "Lead reçu."}), 200
+    # 🔐 Vérification signature
+    if not verify_signature(signature, timestamp):
+        print("❌ Signature invalide")
+        return jsonify({"error": "unauthorized"}), 401
 
-    except Exception as e:
-        print("Erreur inattendue /leads_pv :", str(e))
-        return jsonify({"status": "error", "message": str(e)}), 500
+    print("\n========= SENDDO WEBHOOK =========")
+
+    print("TYPE EVENT :", event.get("type"))
+    print("TIMESTAMP :", timestamp)
+
+    print("\nDATA :")
+    print(payload.get("data"))
+
+    print("=================================\n")
+
+    # 🎯 Traitement selon type
+    event_type = event.get("type")
+    data = payload.get("data")
+
+    if event_type == "sms":
+        print(f"📩 SMS {data['phone']} → {data['status']}")
+
+    elif event_type == "campaign.sms":
+        print(f"📊 Campaign {data['name']} → {data['status']} ({data['percent']}%)")
+
+    elif event_type == "call":
+        print(f"📞 Call {data['phone']} → {data['status']}")
+
+    elif event_type == "balance.insufficient":
+        print("⚠️ Solde insuffisant")
+
+    return jsonify({"status": "ok"}), 200
 
 
 @app.route("/leads_desinscription_pv", methods=["GET", "POST"])
