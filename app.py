@@ -628,7 +628,45 @@ def health():
     return jsonify({"ok": True, "time": _utc_iso()}), 200
 
 
+@app.route("/leads_pv", methods=["POST", "OPTIONS"])
+def webhook_leads_pv():
+    # preflight CORS
+    if request.method == "OPTIONS":
+        return ("", 204)
 
+    try:
+        data = request.get_json(silent=True)
+        if not data or not isinstance(data, dict):
+            print("❌ /leads_pv: JSON invalide")
+            return jsonify({"status": "error", "message": "Invalid JSON"}), 400
+
+        # ---- 1) Redshift (NEW) ----
+        # On essaye d'insérer; si ça échoue, on requeue pour retry.
+        try:
+            row = normalize_redshift_row(data, request)
+            insert_redshift_row(row)
+            print("✅ Redshift insert OK")
+        except Exception as e:
+            print("❌ Redshift insert failed (queued):", str(e))
+            try:
+                row = normalize_redshift_row(data, request)
+                add_to_redshift_queue(row)
+            except Exception as e2:
+                print("❌ Redshift queue failed:", str(e2))
+            # Important: on ne bloque pas le pipeline Google Sheet
+
+        # ---- 2) Google Sheets pipeline (OLD) ----
+        lead = normalize_lead(data)
+        print("✅ /leads_pv reçu (hidden):", lead.get("form_response", {}).get("hidden", {}))
+        add_to_queue(lead)
+
+        return jsonify({"status": "success", "message": "Lead reçu."}), 200
+
+    except Exception as e:
+        print("Erreur inattendue /leads_pv :", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 500
+    
+    
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
     payload = request.get_json()
