@@ -670,16 +670,6 @@ def webhook_leads_pv():
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
     payload = request.get_json(silent=True)
-    print("HEADERS:", request.headers)
-    print("RAW DATA:", request.data)
-    print("EXPECTED:", hmac.new(
-    WEBHOOK_SECRET.encode(),
-    f"{API_KEY}{timestamp}{WEBHOOK_SECRET}".encode(),
-    hashlib.sha256
-    ).hexdigest())
-    
-    print("RECEIVED:", signature)
-
 
     if not payload:
         print("❌ Payload invalide")
@@ -690,8 +680,23 @@ def sms_webhook():
         return jsonify({"error": "invalid payload"}), 400
 
     event = payload["event"]
+
     signature = event.get("signature")
     timestamp = event.get("timestamp")
+
+    if not signature or not timestamp:
+        print("❌ Signature ou timestamp manquant")
+        return jsonify({"error": "missing fields"}), 400
+
+    # 🔥 DEBUG SAFE
+    expected_signature = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        f"{API_KEY}{timestamp}{WEBHOOK_SECRET}".encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    print("EXPECTED:", expected_signature)
+    print("RECEIVED:", signature)
 
     # 🔐 Vérification signature
     if not verify_signature(signature, timestamp):
@@ -703,8 +708,6 @@ def sms_webhook():
     print("TIMESTAMP :", timestamp)
     print("DATA :", payload.get("data"))
     print("=================================\n")
-
-    return jsonify({"status": "ok"}), 200
 
     return jsonify({"status": "ok"}), 200
 
