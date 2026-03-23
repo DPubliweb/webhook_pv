@@ -669,9 +669,16 @@ def webhook_leads_pv():
     
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
-    payload = request.get_json()
+    payload = request.get_json(silent=True)
+    print("HEADERS:", request.headers)
+    print("RAW DATA:", request.data)
 
-    if not payload or "event" not in payload:
+    if not payload:
+        print("❌ Payload invalide")
+        print("RAW:", request.data)
+        return jsonify({"error": "invalid json"}), 400
+
+    if "event" not in payload:
         return jsonify({"error": "invalid payload"}), 400
 
     event = payload["event"]
@@ -684,30 +691,12 @@ def sms_webhook():
         return jsonify({"error": "unauthorized"}), 401
 
     print("\n========= SENDDO WEBHOOK =========")
-
     print("TYPE EVENT :", event.get("type"))
     print("TIMESTAMP :", timestamp)
-
-    print("\nDATA :")
-    print(payload.get("data"))
-
+    print("DATA :", payload.get("data"))
     print("=================================\n")
 
-    # 🎯 Traitement selon type
-    event_type = event.get("type")
-    data = payload.get("data")
-
-    if event_type == "sms":
-        print(f"📩 SMS {data['phone']} → {data['status']}")
-
-    elif event_type == "campaign.sms":
-        print(f"📊 Campaign {data['name']} → {data['status']} ({data['percent']}%)")
-
-    elif event_type == "call":
-        print(f"📞 Call {data['phone']} → {data['status']}")
-
-    elif event_type == "balance.insufficient":
-        print("⚠️ Solde insuffisant")
+    return jsonify({"status": "ok"}), 200
 
     return jsonify({"status": "ok"}), 200
 
