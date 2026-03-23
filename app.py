@@ -672,6 +672,14 @@ def sms_webhook():
     payload = request.get_json(silent=True)
     print("HEADERS:", request.headers)
     print("RAW DATA:", request.data)
+    print("EXPECTED:", hmac.new(
+    WEBHOOK_SECRET.encode(),
+    f"{API_KEY}{timestamp}{WEBHOOK_SECRET}".encode(),
+    hashlib.sha256
+    ).hexdigest())
+    
+    print("RECEIVED:", signature)
+
 
     if not payload:
         print("❌ Payload invalide")
