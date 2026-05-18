@@ -592,7 +592,7 @@ def process_lead(lead):
                         f"Merci pour votre demande\n"
                         f"Un conseiller vous recontactera sous 24h à 48h\n\n"
                         f"Pour sécuriser votre parcours, veuillez noter votre code dossier {code}. "
-                        f"Pour annuler votre RDV, cliquez ici: https:://vvs.bz/annulationPVML"
+                        f"Pour annuler votre RDV, cliquez ici: https://cliquez-ici.info/annulationPVML"
                     )
                 })
                 print("Réponse Vonage:", response)
@@ -828,7 +828,7 @@ def webhook_unbounce_pv():
                             f"Merci pour votre demande\n"
                             f"Un conseiller vous recontactera sous 24h à 48h\n\n"
                             f"Pour sécuriser votre parcours, veuillez noter votre code dossier {code}. "
-                            f"Pour annuler votre RDV, cliquez ici: https://vvs.bz/annulationPVML"
+                            f"Pour annuler votre RDV, cliquez ici: https://cliquez-ici.info/annulationPVML"
                         )
                     })
                     if response.get("messages", [{}])[0].get("status") != "0":
